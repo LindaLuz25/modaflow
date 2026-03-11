@@ -1,98 +1,180 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { router } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { auth } from "../../firebaseConfig";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-export default function HomeScreen() {
+  const login = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter your credentials.");
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.replace("/home");
+    } catch (error: any) {
+      Alert.alert("Login Error", "Invalid email or password.");
+    }
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+          <View style={styles.headerSection}>
+            <Text style={styles.brandLogo}>MODAFLOW</Text>
+            <View style={styles.line} />
+            <Text style={styles.welcomeText}>WELCOME TO THE COLLECTION</Text>
+          </View>
+
+          <View style={styles.formSection}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>EMAIL ADDRESS</Text>
+              <TextInput
+                placeholder="email@studio.com"
+                placeholderTextColor="#BBB"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>PASSWORD</Text>
+              <TextInput
+                placeholder="••••••••"
+                placeholderTextColor="#BBB"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+              />
+            </View>
+
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={login}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.loginButtonText}>SIGN IN</Text>
+            </TouchableOpacity>
+
+            <View style={styles.footerLinks}>
+              <Text style={styles.noAccountText}>New to the studio?</Text>
+              <TouchableOpacity onPress={() => router.push("/registro")}>
+                <Text style={styles.registerLink}>CREATE ACCOUNT</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
   },
-  stepContainer: {
-    gap: 8,
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 30,
+    justifyContent: "center",
+  },
+  headerSection: {
+    alignItems: "center",
+    marginBottom: 60,
+  },
+  brandLogo: {
+    fontSize: 28,
+    fontWeight: "900",
+    letterSpacing: 10,
+    color: "#1A1A1A",
+    textAlign: "center",
+  },
+  line: {
+    height: 1,
+    width: 40,
+    backgroundColor: "#1A1A1A",
+    marginVertical: 15,
+  },
+  welcomeText: {
+    fontSize: 10,
+    letterSpacing: 3,
+    color: "#888",
+    fontWeight: "600",
+  },
+  formSection: {
+    width: "100%",
+  },
+  inputGroup: {
+    marginBottom: 25,
+  },
+  label: {
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    color: "#1A1A1A",
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#1A1A1A",
+    letterSpacing: 0.5,
+  },
+  loginButton: {
+    backgroundColor: "#1A1A1A",
+    paddingVertical: 18,
+    alignItems: "center",
+    marginTop: 20,
+    borderRadius: 2, // Bordes rectos para un look más serio
+  },
+  loginButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 12,
+    letterSpacing: 3,
+  },
+  footerLinks: {
+    marginTop: 30,
+    alignItems: "center",
+  },
+  noAccountText: {
+    fontSize: 12,
+    color: "#888",
+    marginBottom: 5,
+  },
+  registerLink: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#1A1A1A",
+    letterSpacing: 1.5,
+    textDecorationLine: "underline",
   },
 });
