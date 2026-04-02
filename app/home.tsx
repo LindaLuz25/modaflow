@@ -4,6 +4,7 @@ import { equalTo, getDatabase, onValue, orderByChild, query, ref } from "firebas
 import { useEffect, useRef, useState } from "react";
 import {
   Image,
+  Modal,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -14,7 +15,9 @@ import {
   useWindowDimensions
 } from "react-native";
 
+import MapView, { Marker } from "react-native-maps";
 import { auth } from "../firebaseConfig";
+import Chat from "./chat";
 
 type Product = {
   id: string;
@@ -32,6 +35,7 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const [menuVisible, setMenuVisible] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [chatVisible, setChatVisible] = useState(false);
 
   const mainScrollRef = useRef<ScrollView>(null);
   const carouselRef = useRef<ScrollView>(null);
@@ -42,6 +46,11 @@ export default function Home() {
     "https://fashionandillustration.com/wp-content/uploads/2014/06/COLECCI%C3%93N-DE-MODAS-fall-winter-By-Paola-Castillo.jpg"
   ];
 
+  const storeLocation = {
+    latitude: -12.0464,   // Lima
+    longitude: -77.0428,
+  };
+
   const gap = 20;
   let columns = 2;
   if (width > 700) columns = 3;
@@ -49,7 +58,7 @@ export default function Home() {
 
   useEffect(() => {
     const db = getDatabase();
-    
+
     // 1. Cargar Productos
     const productsRef = ref(db, "products");
     onValue(productsRef, (snapshot) => {
@@ -67,7 +76,7 @@ export default function Home() {
     if (auth.currentUser?.email) {
       const clientsRef = ref(db, "clients");
       const userQuery = query(clientsRef, orderByChild("email"), equalTo(auth.currentUser.email));
-      
+
       onValue(userQuery, (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -108,10 +117,10 @@ export default function Home() {
             <Text style={styles.logo}>MODAFLOW</Text>
             <Text style={styles.subtitle}>Spring / Summer 2026</Text>
           </View>
-          
+
           <View style={styles.headerActions}>
             {/* FOTO DE PERFIL CIRCULAR */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.profileBtn}
               onPress={() => router.push("/profile")} // Te llevará a la página que crearemos
             >
@@ -210,8 +219,68 @@ export default function Home() {
           ))}
         </View>
 
-        <View style={styles.footerSpace} />
+        {/* FOOTER CON MAPA */}
+        <View style={styles.footer}>
+
+          <Text style={styles.footerTitle}>Our Store</Text>
+          <Text style={styles.footerText}>Lima, Peru</Text>
+
+          <TouchableOpacity onPress={() => router.push("/map")}>
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: storeLocation.latitude,
+                longitude: storeLocation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }}
+            >
+              <Marker
+                coordinate={storeLocation}
+                title="ModaFlow Store"
+                description="Visit us here!"
+              />
+            </MapView>
+          </TouchableOpacity>
+
+
+        </View>
       </ScrollView>
+
+      {/* BOTÓN FLOTANTE CHAT */}
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => setChatVisible(true)}
+      >
+        <Text style={styles.chatIcon}>💬</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={chatVisible}
+        animationType="slide"
+        transparent={true}
+      >
+        <View style={styles.chatModal}>
+          <View style={styles.chatContainer}>
+
+            {/* BOTÓN CERRAR */}
+            <TouchableOpacity
+              onPress={() => setChatVisible(false)}
+              style={{ alignSelf: "flex-end", padding: 10 }}
+            >
+              <Text style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                zIndex: 10
+              }}>✕</Text>
+            </TouchableOpacity>
+
+            <Chat />
+          </View>
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -316,6 +385,49 @@ const styles = StyleSheet.create({
   productName: { fontSize: 11, fontWeight: "600", color: "#333", textTransform: "uppercase", letterSpacing: 1.5 },
   productPrice: { fontSize: 14, color: "#000", fontWeight: "700", marginTop: 6 },
 
+  chatButton: {
+    position: "absolute",
+    bottom: 30,
+    right: 25,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 10,
+    zIndex: 2000,
+  },
+
+  chatIcon: {
+    color: "#FFF",
+    fontSize: 24,
+  },
+
+  chatModal: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "flex-end", // 👈 importante
+    padding: 20,
+  },
+
+  chatContainer: {
+    width: "70%",      // 👈 más pequeño
+    height: "45%",     // 👈 también un poco menos alto
+    backgroundColor: "#FFF",
+    borderRadius: 15,  // 👈 más suave
+    overflow: "hidden",
+
+    // sombra pro
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+
   dropdownMenu: {
     position: "absolute",
     right: 25,
@@ -332,5 +444,28 @@ const styles = StyleSheet.create({
   menuItem: { paddingVertical: 18, paddingHorizontal: 25 },
   menuItemText: { fontSize: 11, fontWeight: "700", letterSpacing: 2, textTransform: 'uppercase' },
   menuDivider: { height: 1, backgroundColor: '#F0F0F0', marginHorizontal: 25 },
-  footerSpace: { height: 80 }
+
+  footer: {
+    marginTop: 40,
+    paddingHorizontal: 25,
+    paddingBottom: 40,
+  },
+
+  footerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 5,
+  },
+
+  footerText: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 15,
+  },
+
+  map: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+  },
 });
