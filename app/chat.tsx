@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from "firebase/firestore";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -87,9 +86,6 @@ export default function Chat() {
     <View  style={styles.safeArea}>
       {/* HEADER ESTILO MODAFLOW */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="chevron-down" size={24} color="#000" />
-        </TouchableOpacity>
         <View style={styles.headerTitleWrapper}>
           <Text style={styles.logoText}>MODAFLOW</Text>
           <Text style={styles.supportText}>CUSTOMER SUPPORT</Text>

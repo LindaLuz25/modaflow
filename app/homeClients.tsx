@@ -29,7 +29,7 @@ type Product = {
 
 const HERO_HEIGHT = 900;
 
-export default function Home() {
+export default function HomeClients() {
   const [products, setProducts] = useState<Product[]>([]);
   const [userProfile, setUserProfile] = useState<string | null>(null); // Estado para la foto de perfil
   const { width } = useWindowDimensions();
@@ -145,20 +145,14 @@ export default function Home() {
         </View>
 
         {/* MENÚ DESPLEGABLE */}
-        {menuVisible && (
-          <View style={styles.dropdownMenu}>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); router.push("/addProduct") }}>
-              <Text style={styles.menuItemText}>Add New Product</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); router.push("/manageProducts") }}>
-              <Text style={styles.menuItemText}>Inventory</Text>
-            </TouchableOpacity>
-            <View style={styles.menuDivider} />
-            <TouchableOpacity style={styles.menuItem} onPress={logout}>
-              <Text style={[styles.menuItemText, { color: '#FF4D4D' }]}>Logout</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+                {menuVisible && (
+                  <View style={styles.dropdownMenu}>
+                    <TouchableOpacity style={styles.menuItem} onPress={logout}>
+                      <Text style={[styles.menuItemText, { color: '#FF4D4D' }]}>Logout</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+        
 
         {/* HERO CAROUSEL */}
         <View style={styles.carouselWrapper}>

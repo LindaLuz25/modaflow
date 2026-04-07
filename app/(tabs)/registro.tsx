@@ -26,6 +26,7 @@ export default function RegisterScreen() {
   const [profile, setProfile] = useState(""); // Nuevo estado para la URL de la foto
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("");
 
   const register = async () => {
     if (!fullName || !dni || !address || !phone || !email || !password || !confirmPassword) {
@@ -35,6 +36,11 @@ export default function RegisterScreen() {
 
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
+    if (!role) {
+      Alert.alert("Error", "Please select an account type.");
       return;
     }
 
@@ -52,12 +58,19 @@ export default function RegisterScreen() {
         address,
         email,
         phone,
-        profile, // Guardamos la URL de la foto
+        profile,
+        role,
         createdAt: new Date().toISOString()
       });
 
       Alert.alert("Success", "Account created successfully 🎉");
-      router.replace("/home");
+      if (role === "cliente") {
+        router.replace("/homeClients");
+      } else if (role === "vendedor") {
+        router.replace("/home");
+      } else {
+        router.replace("/homeClients"); // fallback
+      }
 
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
@@ -77,16 +90,16 @@ export default function RegisterScreen() {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
 
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>← BACK</Text>
+            <Text style={styles.backButtonText}>← Volver</Text>
           </TouchableOpacity>
 
           <View style={styles.headerSection}>
             <Text style={styles.brandLogo}>MODAFLOW</Text>
-            <Text style={styles.welcomeText}>CREATE YOUR PROFILE</Text>
+            <Text style={styles.welcomeText}>Crea tu Perfil</Text>
           </View>
 
           <View style={styles.formSection}>
-            
+
             {/* CAMPO FOTO DE PERFIL CON PREVIEW */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>PROFILE PICTURE URL</Text>
@@ -111,7 +124,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>FULL NAME</Text>
+              <Text style={styles.label}>Nombre Completo</Text>
               <TextInput
                 placeholder="Rossana Perez"
                 placeholderTextColor="#BBB"
@@ -147,7 +160,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>ADDRESS</Text>
+              <Text style={styles.label}>Direccion</Text>
               <TextInput
                 placeholder="Av. Lima 123"
                 placeholderTextColor="#BBB"
@@ -158,7 +171,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>EMAIL ADDRESS</Text>
+              <Text style={styles.label}>EMAIL</Text>
               <TextInput
                 placeholder="you@example.com"
                 placeholderTextColor="#BBB"
@@ -182,7 +195,7 @@ export default function RegisterScreen() {
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>CONFIRM PASSWORD</Text>
+              <Text style={styles.label}>Confirmar Contraseña</Text>
               <TextInput
                 placeholder="••••••••"
                 placeholderTextColor="#BBB"
@@ -191,6 +204,43 @@ export default function RegisterScreen() {
                 secureTextEntry
                 style={styles.input}
               />
+            </View>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Tipo de Cuenta</Text>
+
+              <View style={styles.roleContainer}>
+
+                <TouchableOpacity
+                  style={[
+                    styles.roleButton,
+                    role === "cliente" && styles.roleActive
+                  ]}
+                  onPress={() => setRole("cliente")}
+                >
+                  <Text style={[
+                    styles.roleText,
+                    role === "cliente" && styles.roleTextActive
+                  ]}>
+                    Cliente
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.roleButton,
+                    role === "vendedor" && styles.roleActive
+                  ]}
+                  onPress={() => setRole("vendedor")}
+                >
+                  <Text style={[
+                    styles.roleText,
+                    role === "vendedor" && styles.roleTextActive
+                  ]}>
+                    Vendedor
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
             </View>
 
             <TouchableOpacity
@@ -332,5 +382,32 @@ const styles = StyleSheet.create({
     color: "#1A1A1A",
     letterSpacing: 1.5,
     textDecorationLine: "underline",
+  }, roleContainer: {
+    flexDirection: "row",
+    gap: 10,
+  },
+
+  roleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "#DDD",
+    alignItems: "center",
+  },
+
+  roleActive: {
+    backgroundColor: "#1A1A1A",
+    borderColor: "#1A1A1A",
+  },
+
+  roleText: {
+    fontSize: 11,
+    letterSpacing: 2,
+    color: "#888",
+    fontWeight: "700",
+  },
+
+  roleTextActive: {
+    color: "#FFF",
   },
 });

@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { equalTo, get, getDatabase, orderByChild, query, ref } from "firebase/database";
 import { useState } from "react";
 import {
   Alert,
@@ -13,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { auth } from "../../firebaseConfig";
+import { app, auth } from "../../firebaseConfig";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -24,9 +25,45 @@ export default function LoginScreen() {
       Alert.alert("Error", "Please enter your credentials.");
       return;
     }
+
     try {
+      // 1️⃣ Login en Auth
       await signInWithEmailAndPassword(auth, email, password);
-      router.replace("/home");
+
+      // 2️⃣ Buscar usuario en Realtime DB
+      const db = getDatabase(app);
+      const clientsRef = ref(db, "clients");
+
+      const userQuery = query(
+        clientsRef,
+        orderByChild("email"),
+        equalTo(email)
+      );
+
+      const snapshot = await get(userQuery);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const userKey = Object.keys(data)[0];
+        const user = data[userKey];
+
+        const role = user.role;
+
+        // 3️⃣ Redirección según role
+        if (role === "cliente") {
+          router.replace("/homeClients");
+        } else if (role === "soporte") {
+          router.replace("/support");
+        } else if (role === "vendedor") {
+          router.replace("/home");
+        } else {
+          router.replace("/homeClients"); // fallback
+        }
+
+      } else {
+        Alert.alert("Error", "User data not found.");
+      }
+
     } catch (error: any) {
       Alert.alert("Login Error", "Invalid email or password.");
     }
